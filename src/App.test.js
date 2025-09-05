@@ -117,4 +117,44 @@ describe('TodoApp', () => {
     const savedTodos = JSON.parse(localStorage.setItem.mock.calls[localStorage.setItem.mock.calls.length - 1][1]);
     expect(savedTodos[0].text).toBe('テストタスク');
   });
+
+  test('URLを含むタスクを追加できる', () => {
+    render(<App />);
+    const taskInput = screen.getByPlaceholderText('新しいタスクを入力...');
+    const urlInput = screen.getByPlaceholderText('関連URLを入力（オプション）...');
+    const addButton = screen.getByText('追加');
+
+    userEvent.type(taskInput, 'ドキュメントを読む');
+    userEvent.type(urlInput, 'https://example.com');
+    fireEvent.click(addButton);
+
+    expect(screen.getByText('ドキュメントを読む')).toBeInTheDocument();
+    expect(screen.getByText('🔗 リンクを開く')).toBeInTheDocument();
+  });
+
+  test('URLリンクが新しいタブで開く', () => {
+    render(<App />);
+    const taskInput = screen.getByPlaceholderText('新しいタスクを入力...');
+    const urlInput = screen.getByPlaceholderText('関連URLを入力（オプション）...');
+    
+    userEvent.type(taskInput, 'テストタスク{enter}');
+    userEvent.type(urlInput, 'https://example.com');
+    
+    const addButton = screen.getByText('追加');
+    fireEvent.click(addButton);
+
+    const link = screen.getByText('🔗 リンクを開く');
+    expect(link).toHaveAttribute('href', 'https://example.com');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  test('URLなしでもタスクを追加できる', () => {
+    render(<App />);
+    const taskInput = screen.getByPlaceholderText('新しいタスクを入力...');
+    userEvent.type(taskInput, 'URLなしタスク{enter}');
+
+    expect(screen.getByText('URLなしタスク')).toBeInTheDocument();
+    expect(screen.queryByText('🔗 リンクを開く')).not.toBeInTheDocument();
+  });
 });
