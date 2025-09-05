@@ -7,6 +7,7 @@ export default function TodoApp() {
     return savedTodos ? JSON.parse(savedTodos) : [];
   });
   const [inputValue, setInputValue] = useState('');
+  const [urlValue, setUrlValue] = useState('');
 
   // todosが変更されるたびにLocalStorageに保存
   useEffect(() => {
@@ -18,9 +19,11 @@ export default function TodoApp() {
       setTodos([...todos, {
         id: Date.now(),
         text: inputValue,
+        url: urlValue.trim() || null,
         completed: false
       }]);
       setInputValue('');
+      setUrlValue('');
     }
   };
 
@@ -57,21 +60,31 @@ export default function TodoApp() {
       </div>
 
       {/* 入力エリア */}
-      <div className="flex mb-4">
+      <div className="space-y-2 mb-4">
+        <div className="flex">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="新しいタスクを入力..."
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={addTodo}
+            className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            追加
+          </button>
+        </div>
         <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          type="url"
+          value={urlValue}
+          onChange={(e) => setUrlValue(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="新しいタスクを入力..."
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="関連URLを入力（オプション）..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button
-          onClick={addTodo}
-          className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          追加
-        </button>
       </div>
 
       {/* Todoリスト */}
@@ -96,15 +109,28 @@ export default function TodoApp() {
                 onChange={() => toggleTodo(todo.id)}
                 className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <span
-                className={`flex-1 ${
-                  todo.completed 
-                    ? 'line-through text-gray-500' 
-                    : 'text-gray-800'
-                }`}
-              >
-                {todo.text}
-              </span>
+              <div className="flex-1">
+                <span
+                  className={`${
+                    todo.completed 
+                      ? 'line-through text-gray-500' 
+                      : 'text-gray-800'
+                  }`}
+                >
+                  {todo.text}
+                </span>
+                {todo.url && (
+                  <a
+                    href={todo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block mt-1 text-sm text-blue-500 hover:text-blue-700 underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    🔗 リンクを開く
+                  </a>
+                )}
+              </div>
               <button
                 onClick={() => deleteTodo(todo.id)}
                 className="ml-2 px-2 py-1 text-red-500 hover:bg-red-50 rounded focus:outline-none"
